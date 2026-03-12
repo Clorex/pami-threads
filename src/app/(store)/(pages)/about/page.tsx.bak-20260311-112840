@@ -1,0 +1,119 @@
+import Link from "next/link";
+
+export default function AboutPage() {
+  const ig = (process.env.NEXT_PUBLIC_INSTAGRAM_URL || "").trim();
+
+  return (
+    <div>
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-pt-green via-pt-orange to-pt-red opacity-90" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.20),transparent_55%),radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.12),transparent_60%)]" />
+
+        <div className="relative mx-auto max-w-7xl px-4 py-16 text-white">
+          <div className="inline-flex rounded-full bg-white/15 px-4 py-2 text-xs font-semibold">
+            Australia-based • Nigerian-inspired • Ankara & Adire
+          </div>
+
+          <h1 className="mt-6 text-4xl font-extrabold tracking-tight sm:text-5xl">
+            About Pami Threads
+          </h1>
+
+          <p className="mt-4 max-w-2xl text-base text-white/90 sm:text-lg">
+            Pami Threads is an Australian brand bringing Nigerian-inspired Ankara and Adire style to a modern, premium wardrobe.
+            We focus on standout trousers with bold prints, clean finishing, and unisex-friendly fits.
+          </p>
+
+          <div className="mt-8">
+            {ig ? (
+              <a
+                href={ig}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center rounded-xl bg-white px-7 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-100"
+              >
+                Contact us on Instagram
+              </a>
+            ) : (
+              <div className="text-sm text-white/90">
+                Add your Instagram link in <span className="font-semibold">NEXT_PUBLIC_INSTAGRAM_URL</span> to show the contact button here.
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Content */}
+      <section className="mx-auto max-w-7xl px-4 py-12">
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* Story */}
+          <div className="lg:col-span-2">
+            <h2 className="text-2xl font-bold text-pt-green">Our story</h2>
+            <p className="mt-4 text-sm leading-6 text-gray-600">
+              We love the energy of Nigerian fabrics — the patterns, the color, the confidence.
+              Pami Threads was created to make those statement fabrics easy to wear every day: premium cuts, strong structure,
+              and thoughtful details that make an outfit feel complete.
+            </p>
+
+            <p className="mt-4 text-sm leading-6 text-gray-600">
+              Today, we focus on trousers — because the right pair can carry the whole look. Our pieces are designed to stand out,
+              feel comfortable, and fit into both casual and elevated styling.
+            </p>
+
+            <div className="mt-8 rounded-3xl border bg-white p-6">
+              <div className="text-sm font-semibold text-gray-900">What we make</div>
+              <ul className="mt-3 grid gap-2 text-sm text-gray-600 sm:grid-cols-2">
+                <li className="rounded-2xl bg-gray-50 px-4 py-3">Ankara trousers</li>
+                <li className="rounded-2xl bg-gray-50 px-4 py-3">Adire trousers</li>
+                <li className="rounded-2xl bg-gray-50 px-4 py-3">Limited drops</li>
+                <li className="rounded-2xl bg-gray-50 px-4 py-3">Unisex-friendly fits</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Why */}
+          <div>
+            <h2 className="text-2xl font-bold text-pt-green">Why Pami Threads</h2>
+            <div className="mt-4 space-y-4">
+              <div className="rounded-2xl border bg-white p-5">
+                <div className="text-sm font-semibold text-gray-900">Premium finishing</div>
+                <p className="mt-2 text-sm text-gray-600">
+                  Clean stitching, solid structure, and quality details.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border bg-white p-5">
+                <div className="text-sm font-semibold text-gray-900">Bold prints, wearable styling</div>
+                <p className="mt-2 text-sm text-gray-600">
+                  Statement fabrics — balanced with modern shapes.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border bg-white p-5">
+                <div className="text-sm font-semibold text-gray-900">Worldwide shopping</div>
+                <p className="mt-2 text-sm text-gray-600">
+                  Australia-based brand, shipping options for different regions.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-2xl border bg-white p-5">
+              <div className="text-sm font-semibold text-gray-900">Quick links</div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link href="/shop" className="rounded-full border bg-white px-4 py-2 text-xs font-semibold hover:border-pt-orange hover:text-pt-orange">
+                  Shop
+                </Link>
+                <Link href="/size-guide" className="rounded-full border bg-white px-4 py-2 text-xs font-semibold hover:border-pt-orange hover:text-pt-orange">
+                  Size guide
+                </Link>
+                <Link href="/policies/shipping-returns" className="rounded-full border bg-white px-4 py-2 text-xs font-semibold hover:border-pt-orange hover:text-pt-orange">
+                  Shipping & Returns
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

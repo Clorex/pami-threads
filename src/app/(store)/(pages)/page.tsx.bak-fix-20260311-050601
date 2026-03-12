@@ -1,0 +1,68 @@
+import Link from "next/link";
+import { listActiveProducts } from "@/lib/firebase";
+import { cldImageUrl } from "@/lib/cloudinary/url";
+import { ProductCard } from "@/components/store/ProductCard";
+import { Sparkles, Scissors, Users, ShieldCheck } from "lucide-react";
+import clsx from "clsx";
+
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const products = await listActiveProducts(24);
+
+  const newArrivals = products.slice(0, 8);
+  const bestSellers = products
+    .filter((p) => (p.collections || []).some((c) => c.toLowerCase().includes("best")))
+    .slice(0, 8);
+
+  const collections = [
+    { name: "Ankara", href: "/shop?fabric=Ankara" },
+    { name: "Adire", href: "/shop?fabric=Adire" },
+    { name: "Linen", href: "/shop?fabric=Linen" },
+    { name: "Asooke", href: "/shop?fabric=Asooke" },
+    { name: "Polo Fabric", href: "/shop?fabric=Polo" },
+  ];
+
+  const features = [
+    { title: "Handmade Fabrics", desc: "Every piece is crafted by hand with care and precision.", Icon: Scissors, accent: "border-pt-green" },
+    { title: "African Heritage", desc: "Celebrating traditional fabrics like Ankara, Adire, and Asooke.", Icon: Sparkles, accent: "border-pt-orange" },
+    { title: "Unisex Fashion", desc: "Modern designs made for everyone.", Icon: Users, accent: "border-pt-red" },
+    { title: "Quality Craftsmanship", desc: "Premium materials and attention to every detail.", Icon: ShieldCheck, accent: "border-pt-green" },
+  ];
+
+  function thumbUrl(p: typeof products[number]) {
+    const img = p.images?.[0];
+    if (!img) return "/placeholder.png";
+    return cldImageUrl(img.publicId, { width: 800, height: 1000, crop: "fill", quality: "auto", format: "auto" });
+  }
+
+  return (
+    <div>
+      {/* HERO (inspired by modern store layouts, but original) */}
+                  {/* BEST SELLERS */}
+      {bestSellers.length > 0 ? (
+        <section className="mx-auto max-w-7xl px-4 py-16">
+          <div className="flex items-end justify-between">
+            <h2 className="text-2xl font-semibold text-pt-green">Best Sellers</h2>
+            <Link href="/shop" className="text-sm font-medium text-gray-600 hover:text-pt-orange">
+              View all
+            </Link>
+          </div>
+
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+            {bestSellers.slice(0, 4).map((p) => (
+              <ProductCard
+                key={p.id}
+                slug={p.slug}
+                title={p.title}
+                priceCents={p.priceCents}
+                imageUrl={thumbUrl(p)}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+      ) : null}
+    </div>
+  );
+}

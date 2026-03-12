@@ -1,0 +1,27 @@
+export function cldImageUrl(
+  publicId: string,
+  opts?: {
+    width?: number;
+    height?: number;
+    crop?: "fill" | "fit" | "scale" | "limit";
+    quality?: string;
+    format?: string;
+  }
+) {
+  
+  if (!publicId) return "/placeholder.svg";
+  if (publicId.startsWith("http://") || publicId.startsWith("https://")) return publicId;
+const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME;
+  if (!cloudName) throw new Error("Missing env: NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME (or CLOUDINARY_CLOUD_NAME)");
+
+  const w = opts?.width ? `w_${opts.width}` : null;
+  const h = opts?.height ? `h_${opts.height}` : null;
+  const c = opts?.crop ? `c_${opts.crop}` : "c_limit";
+  const q = `q_${opts?.quality || "auto"}`;
+  const f = `f_${opts?.format || "auto"}`;
+  const dpr = "dpr_auto";
+
+  const parts = [c, w, h, q, f, dpr].filter(Boolean).join(",");
+
+  return `https://res.cloudinary.com/${cloudName}/image/upload/${parts}/${publicId}`;
+}

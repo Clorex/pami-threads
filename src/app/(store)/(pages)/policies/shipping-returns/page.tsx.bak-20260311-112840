@@ -1,0 +1,35 @@
+import Link from "next/link";
+
+export default function ShippingReturnsPage() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-12">
+      <h1 className="text-3xl font-extrabold text-pt-green">Shipping & Returns</h1>
+
+      <div className="mt-8 space-y-6">
+        <section className="rounded-2xl border bg-white p-6">
+          <h2 className="text-lg font-bold text-gray-900">Shipping</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            We offer shipping options for different locations. Delivery time and cost vary by destination and carrier.
+          </p>
+          <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-gray-600">
+            <li>Worldwide shipping (varies by location)</li>
+            <li>Tracking provided when available</li>
+            <li>Delivery time depends on carrier and destination</li>
+          </ul>
+        </section>
+
+        <section className="rounded-2xl border bg-white p-6">
+          <h2 className="text-lg font-bold text-gray-900">Returns & Exchanges</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Returns/exchanges policy is being finalized. If anything arrives incorrect or damaged, contact us and we’ll help quickly.
+          </p>
+          <div className="mt-4">
+            <Link href="/about" className="text-sm font-semibold text-gray-700 hover:text-pt-orange underline underline-offset-4">
+              Contact via Instagram (About page)
+            </Link>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}

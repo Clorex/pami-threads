@@ -1,0 +1,92 @@
+"use client";
+
+
+import * as React from "react";
+import { useEffect, useState } from "react";
+import { ProductForm, type ProductFormValues } from "@/components/admin/ProductForm";
+
+type ImageData = {
+  publicId: string;
+  secureUrl: string;
+  width: number;
+  height: number;
+  bytes: number;
+  format: string;
+  alt?: string;
+};
+
+type VariantData = {
+  size: string;
+  fabric: string;
+  color: string;
+  stock: number;
+  sku?: string;
+};
+
+type ApiProduct = {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  fitNotes?: string;
+  priceCents: number;
+  isActive: boolean;
+  collections: string[];
+  images: ImageData[];
+  variants: VariantData[];
+};
+
+export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: productId } = (React.use(params as any) as { id: string });
+
+  const [initial, setInitial] = useState<Partial<ProductFormValues> | null>(null);
+  const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      setMsg("");
+      const r = await fetch(`/admin/api/products/${productId}`);
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j?.ok) {
+        setMsg("Could not load product.");
+        return;
+      }
+
+      const p = j.product as ApiProduct;
+
+      setInitial({
+        title: p.title,
+        slug: p.slug,
+        description: p.description || "",
+        fitNotes: p.fitNotes || "",
+        priceDollars: String((p.priceCents || 0) / 100),
+        isActive: Boolean(p.isActive),
+        collectionsCsv: (p.collections || []).join(", "),
+        images: (p.images || []).map((i) => ({ ...i, alt: i.alt || "" })),
+        variants: (p.variants || []).map((v) => ({ ...v, stock: Number(v.stock || 0) })),
+      });
+    })();
+  }, [productId]);
+
+  if (msg) return <div className="text-sm text-gray-700">{msg}</div>;
+  if (!initial) return <div className="text-sm text-gray-700">Loading...</div>;
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold">Edit product</h1>
+        <p className="mt-1 text-sm text-gray-600">Update details, images, and options.</p>
+      </div>
+
+      <ProductForm
+        initial={initial}
+        submitLabel="Save changes"
+        submitTo={`/admin/api/products/${productId}`}
+        method="PATCH"
+        onSaved={() => {
+          window.location.href = "/admin/products";
+        }}
+      />
+    </div>
+  );
+}

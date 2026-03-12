@@ -1,0 +1,51 @@
+"use client";
+
+import Image from "next/image";
+import { useState } from "react";
+
+export function ProductGallery({
+  images,
+  title,
+}: {
+  images: { url: string; alt: string }[];
+  title: string;
+}) {
+  const [active, setActive] = useState(0);
+
+  const main = images[active] || images[0];
+
+  return (
+    <div className="space-y-4">
+      <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-gray-100">
+        {main ? (
+          <Image
+            src={main.url}
+            alt={main.alt || title}
+            fill
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            className="object-cover"
+            priority
+          />
+        ) : null}
+      </div>
+
+      {images.length > 1 ? (
+        <div className="flex gap-3 overflow-auto pb-1">
+          {images.map((img, idx) => (
+            <button
+              key={img.url}
+              type="button"
+              onClick={() => setActive(idx)}
+              className={`relative h-20 w-16 shrink-0 overflow-hidden rounded-xl border bg-gray-100 ${
+                idx === active ? "border-pt-orange" : "border-gray-200"
+              }`}
+              aria-label={`View image ${idx + 1}`}
+            >
+              <Image src={img.url} alt={img.alt || title} fill sizes="80px" className="object-cover" />
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}

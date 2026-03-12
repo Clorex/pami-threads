@@ -1,0 +1,106 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { ShopFilters, type Filters } from "@/components/store/ShopFilters";
+import { ProductCard } from "@/components/store/ProductCard";
+import type { ShopProduct } from "./page";
+import { SlidersHorizontal, X } from "lucide-react";
+
+export function ShopClient({ products }: { products: ShopProduct[] }) {
+  const searchParams = useSearchParams();
+
+  // Read URL once for the initial state (no useEffect => no lint error)
+  const initialFabric = searchParams.get("fabric") || "";
+
+  const [filters, setFilters] = useState<Filters>(() => ({
+    fabric: initialFabric,
+    color: "",
+    size: "",
+    sort: "default",
+  }));
+
+  const [showFilters, setShowFilters] = useState(false);
+
+  const filtered = useMemo(() => {
+    let result = [...products];
+
+    if (filters.fabric) {
+      const f = filters.fabric.toLowerCase();
+      result = result.filter((p) => p.variants.some((v) => (v.fabric || "").toLowerCase() === f));
+    }
+
+    if (filters.color) {
+      const c = filters.color.toLowerCase();
+      result = result.filter((p) => p.variants.some((v) => (v.color || "").toLowerCase() === c));
+    }
+
+    if (filters.size) {
+      const s = filters.size.toLowerCase();
+      result = result.filter((p) => p.variants.some((v) => (v.size || "").toLowerCase() === s));
+    }
+
+    if (filters.sort === "price-asc") {
+      result.sort((a, b) => a.priceCents - b.priceCents);
+    } else if (filters.sort === "price-desc") {
+      result.sort((a, b) => b.priceCents - a.priceCents);
+    }
+
+    return result;
+  }, [products, filters]);
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-8">
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-pt-green">Shop</h1>
+          <p className="mt-1 text-sm text-gray-600">
+            {filtered.length} {filtered.length === 1 ? "product" : "products"}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowFilters((v) => !v)}
+          className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm md:hidden"
+        >
+          {showFilters ? <X className="h-4 w-4" /> : <SlidersHorizontal className="h-4 w-4" />}
+          Filters
+        </button>
+      </div>
+
+      <div className="mt-8 flex gap-8">
+        <aside className={`w-full shrink-0 md:block md:w-56 ${showFilters ? "block" : "hidden"}`}>
+          <ShopFilters
+            products={products}
+            filters={filters}
+            onChange={(next) => {
+              setFilters(next);
+              setShowFilters(false);
+            }}
+          />
+        </aside>
+
+        <div className="flex-1">
+          {filtered.length > 0 ? (
+            <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+              {filtered.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  slug={p.slug}
+                  title={p.title}
+                  priceCents={p.priceCents}
+                  imageUrl={p.imageUrl}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="py-20 text-center text-sm text-gray-500">
+              No products match your filters. Try adjusting your selection.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

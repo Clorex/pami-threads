@@ -1,0 +1,124 @@
+import Link from "next/link";
+import { listActiveProducts } from "@/lib/firebase";
+import { cldImageUrl } from "@/lib/cloudinary/url";
+import { ProductCard } from "@/components/store/ProductCard";
+import { Sparkles, Scissors, Users, ShieldCheck } from "lucide-react";
+import clsx from "clsx";
+
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const products = await listActiveProducts(24);
+
+  const newArrivals = products.slice(0, 8);
+  const bestSellers = products
+    .filter((p) => (p.collections || []).some((c) => c.toLowerCase().includes("best")))
+    .slice(0, 8);
+
+  const collections = [
+    { name: "Ankara", href: "/shop?fabric=Ankara" },
+    { name: "Adire", href: "/shop?fabric=Adire" },
+    { name: "Linen", href: "/shop?fabric=Linen" },
+    { name: "Asooke", href: "/shop?fabric=Asooke" },
+    { name: "Polo Fabric", href: "/shop?fabric=Polo" },
+  ];
+
+  const features = [
+    { title: "Handmade Fabrics", desc: "Every piece is crafted by hand with care and precision.", Icon: Scissors, accent: "border-pt-green" },
+    { title: "African Heritage", desc: "Celebrating traditional fabrics like Ankara, Adire, and Asooke.", Icon: Sparkles, accent: "border-pt-orange" },
+    { title: "Unisex Fashion", desc: "Modern designs made for everyone.", Icon: Users, accent: "border-pt-red" },
+    { title: "Quality Craftsmanship", desc: "Premium materials and attention to every detail.", Icon: ShieldCheck, accent: "border-pt-green" },
+  ];
+
+  function thumbUrl(p: typeof products[number]) {
+    const img = p.images?.[0];
+    if (!img) return "/placeholder.png";
+    return cldImageUrl(img.publicId, { width: 800, height: 1000, crop: "fill", quality: "auto", format: "auto" });
+  }
+
+  return (
+    <div>
+      {/* HERO (inspired by modern store layouts, but original) */}
+            {/* BEST SELLERS (bubble cluster) */}
+      <section className="mx-auto max-w-7xl px-4 py-12">
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="text-xl font-bold text-pt-green sm:text-2xl">Best Sellers</h2>
+          <Link href="/shop" className="text-sm font-semibold text-gray-700 hover:text-pt-orange">
+            View all
+          </Link>
+        </div>
+
+        {bestSellers.length ? (
+          <>
+            {/* Mobile: swipeable circles */}
+            <div className="mt-6 flex gap-4 overflow-x-auto pb-2 pr-4 md:hidden">
+              {bestSellers.slice(0, 5).map((p) => (
+                <Link key={p.id} href={`/product/${p.slug}`} className="shrink-0 w-44">
+                  <div className="relative aspect-square overflow-hidden rounded-full border bg-white shadow-sm">
+                    <img src={thumbUrl(p)} alt={p.title} className="h-full w-full object-cover" />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/45 to-transparent p-3">
+                      <div className="line-clamp-1 text-xs font-semibold text-white">{p.title}</div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Desktop: bubble cluster (overlapping circles like your inspo) */}
+            <div className="mt-8 hidden md:block">
+              <div className="relative mx-auto h-[440px] max-w-5xl">
+                {bestSellers.slice(0, 5).map((p, idx) => {
+                  const pos =
+                    idx === 0
+                      ? "left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 z-30"
+                      : idx === 1
+                        ? "left-6 top-14 h-44 w-44 z-20"
+                        : idx === 2
+                          ? "right-10 top-8 h-48 w-48 z-20"
+                          : idx === 3
+                            ? "left-20 bottom-6 h-48 w-48 z-10"
+                            : "right-20 bottom-10 h-44 w-44 z-10";
+
+                  const glow =
+                    idx === 0
+                      ? "from-pt-orange/30 via-pt-red/20 to-pt-green/30"
+                      : idx % 2 === 0
+                        ? "from-pt-green/25 via-pt-orange/20 to-pt-red/25"
+                        : "from-pt-red/25 via-pt-orange/20 to-pt-green/25";
+
+                  return (
+                    <Link
+                      key={p.id}
+                      href={`/product/${p.slug}`}
+                      className={`group absolute ${pos} block`}
+                      aria-label={p.title}
+                    >
+                      {/* glow ring behind */}
+                      <div className={`absolute -inset-3 rounded-full bg-gradient-to-br ${glow} blur-xl`} />
+
+                      {/* bubble */}
+                      <div className="relative h-full w-full overflow-hidden rounded-full border-4 border-white bg-white shadow-xl">
+                        <img src={thumbUrl(p)} alt={p.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" />
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent p-4">
+                          <div className="line-clamp-1 text-sm font-semibold text-white">{p.title}</div>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <div className="mt-6 text-center text-sm text-gray-600">
+                Top picks from our customers — crafted in bold prints and premium fabrics.
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="mt-6 rounded-2xl border bg-white p-10 text-center text-sm text-gray-600">
+            Add “Best Sellers” to a product’s collections to show it here.
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}

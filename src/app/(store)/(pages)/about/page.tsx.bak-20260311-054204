@@ -1,0 +1,24 @@
+export default function AboutPage() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-12">
+      <h1 className="text-3xl font-extrabold text-pt-green">About Pami Threads</h1>
+      <p className="mt-4 text-sm leading-6 text-gray-600">
+        Pami Threads is a handmade fashion brand inspired by African heritage and modern unisex style.
+        Add your brand story here (where you’re based, your process, and what makes your fabrics special).
+      </p>
+
+      <div className="mt-10 rounded-2xl border bg-white p-6">
+        <h2 className="text-lg font-bold text-gray-900">Contact</h2>
+        <p className="mt-2 text-sm text-gray-600">
+          Email: <span className="font-semibold">your-email@domain.com</span>
+        </p>
+        <p className="mt-1 text-sm text-gray-600">
+          Instagram: <span className="font-semibold">@yourhandle</span>
+        </p>
+        <p className="mt-1 text-sm text-gray-600">
+          Phone/WhatsApp: <span className="font-semibold">+234 …</span>
+        </p>
+      </div>
+    </div>
+  );
+}

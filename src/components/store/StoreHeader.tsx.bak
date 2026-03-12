@@ -1,0 +1,58 @@
+"use client";
+
+import Link from "next/link";
+import { ShoppingBag, User } from "lucide-react";
+import { useEffect, useState } from "react";
+
+type SessionInfo = {
+  kind?: "customer" | "admin";
+  email?: string;
+} | null;
+
+export function StoreHeader() {
+  const [session, setSession] = useState<SessionInfo>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((j) => setSession(j?.session || null))
+      .catch(() => setSession(null));
+  }, []);
+
+  const loggedIn = session?.kind === "customer";
+
+  return (
+    <header className="border-b bg-white">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+        {/* Logo */}
+        <Link href="/" className="text-xl font-bold tracking-tight">
+          PAMI THREADS
+        </Link>
+
+        {/* Center nav */}
+        <nav className="hidden items-center gap-6 md:flex">
+          <Link href="/shop" className="text-sm font-medium text-gray-700 hover:text-black">
+            Shop
+          </Link>
+        </nav>
+
+        {/* Right icons */}
+        <div className="flex items-center gap-4">
+          {loggedIn ? (
+            <Link href="/account" className="text-gray-700 hover:text-black" aria-label="My account">
+              <User className="h-5 w-5" />
+            </Link>
+          ) : (
+            <Link href="/login" className="text-sm font-medium text-gray-700 hover:text-black">
+              Sign in
+            </Link>
+          )}
+
+          <Link href="/cart" className="text-gray-700 hover:text-black" aria-label="Shopping bag">
+            <ShoppingBag className="h-5 w-5" />
+          </Link>
+        </div>
+      </div>
+    </header>
+  );
+}

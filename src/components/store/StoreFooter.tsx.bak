@@ -1,0 +1,101 @@
+import Link from "next/link";
+
+function safeUrl(v?: string) {
+  const s = (v || "").trim();
+  return s || "";
+}
+
+export function StoreFooter() {
+  const year = new Date().getFullYear();
+
+  const ig = safeUrl(process.env.NEXT_PUBLIC_INSTAGRAM_URL);
+  const fb = safeUrl(process.env.NEXT_PUBLIC_FACEBOOK_URL);
+  const mp = safeUrl(process.env.NEXT_PUBLIC_FACEBOOK_MARKETPLACE_URL);
+
+  const hasAny = Boolean(ig || fb || mp);
+
+  return (
+    <footer className="border-t bg-white">
+      <div className="mx-auto max-w-7xl px-4 py-10">
+        <div className="grid gap-8 sm:grid-cols-3">
+          <div>
+            <div className="text-lg font-bold tracking-tight">PAMI THREADS</div>
+            <p className="mt-2 text-sm text-gray-600">
+              Handmade African fashion for everyone.
+            </p>
+          </div>
+
+          <div>
+            <div className="text-sm font-semibold">Quick links</div>
+            <ul className="mt-3 space-y-2 text-sm text-gray-600">
+              <li>
+                <Link href="/shop" className="hover:text-black">
+                  Shop
+                </Link>
+              </li>
+              <li>
+                <Link href="/login" className="hover:text-black">
+                  Sign in
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <div className="text-sm font-semibold">Follow us</div>
+            <ul className="mt-3 space-y-2 text-sm text-gray-600">
+              {ig ? (
+                <li>
+                  <a
+                    href={ig}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-black"
+                  >
+                    Instagram
+                  </a>
+                </li>
+              ) : null}
+
+              {fb ? (
+                <li>
+                  <a
+                    href={fb}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-black"
+                  >
+                    Facebook
+                  </a>
+                </li>
+              ) : null}
+
+              {mp ? (
+                <li>
+                  <a
+                    href={mp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-black"
+                  >
+                    Facebook Marketplace
+                  </a>
+                </li>
+              ) : null}
+
+              {!hasAny ? (
+                <li className="text-xs text-gray-500">
+                  Social links will appear here once added.
+                </li>
+              ) : null}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-8 border-t pt-6 text-center text-xs text-gray-500">
+          &copy; {year} Pami Threads. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  );
+}

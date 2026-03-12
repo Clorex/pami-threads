@@ -1,0 +1,108 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { Star } from "lucide-react";
+
+export function ReviewForm({
+  productId,
+  signedIn,
+}: {
+  productId: string;
+  signedIn: boolean;
+}) {
+  const [rating, setRating] = useState<number>(5);
+  const [text, setText] = useState<string>("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const canSubmit = useMemo(() => signedIn && rating >= 1 && rating <= 5 && !busy, [signedIn, rating, busy]);
+
+  async function submit() {
+    setMsg("");
+    if (!signedIn) {
+      window.location.href = "/login?next=" + encodeURIComponent(window.location.pathname);
+      return;
+    }
+
+    try {
+      setBusy(true);
+      const r = await fetch(`/api/reviews/${productId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating, text }),
+      });
+
+      if (r.status === 401) {
+        window.location.href = "/login?next=" + encodeURIComponent(window.location.pathname);
+        return;
+      }
+
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j?.ok) {
+        setMsg(j?.message || "Could not submit review. Please try again.");
+        return;
+      }
+
+      setMsg("Thank you! Your review has been received and will appear after approval.");
+      setText("");
+    } catch {
+      setMsg("Could not submit review. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border bg-white p-5">
+      <div className="text-sm font-semibold">Leave a review</div>
+
+      <div className="mt-4">
+        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rating</div>
+        <div className="mt-2 flex items-center gap-1">
+          {Array.from({ length: 5 }).map((_, i) => {
+            const n = i + 1;
+            const active = n <= rating;
+            return (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setRating(n)}
+                className="rounded p-1"
+                aria-label={`${n} star`}
+              >
+                <Star className={`h-5 w-5 ${active ? "fill-pt-orange text-pt-orange" : "text-gray-300"}`} />
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="mt-4">
+        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Review</div>
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={4}
+          className="mt-2 w-full rounded-xl border px-3 py-2 text-sm"
+          placeholder="Share your thoughts (optional)"
+          maxLength={1000}
+        />
+      </div>
+
+      {msg ? <div className="mt-3 text-sm text-gray-700">{msg}</div> : null}
+
+      <button
+        type="button"
+        disabled={!canSubmit}
+        onClick={submit}
+        className="mt-4 w-full rounded-xl bg-pt-green hover:bg-pt-green-hover px-5 py-3 text-sm font-semibold text-white disabled:opacity-60"
+      >
+        {busy ? "Submitting..." : "Submit review"}
+      </button>
+
+      {!signedIn ? (
+        <div className="mt-2 text-xs text-gray-500">You must be signed in to leave a review.</div>
+      ) : null}
+    </div>
+  );
+}

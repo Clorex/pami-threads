@@ -1,0 +1,169 @@
+import Image from "next/image";
+import { listActiveProducts } from "@/lib/firebase";
+import { cldImageUrl } from "@/lib/cloudinary/url";
+import { ProductCard } from "@/components/store/ProductCard";
+import Link from "next/link";
+
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const products = await listActiveProducts(24);
+
+  const newArrivals = products.slice(0, 4);
+
+  const bestSellers = products
+    .filter((p) => (p.collections || []).some((c) => c.toLowerCase().includes("best")))
+    .slice(0, 4);
+
+  const collections = [
+    { name: "Ankara", href: "/shop?fabric=Ankara" },
+    { name: "Adire", href: "/shop?fabric=Adire" },
+    { name: "Linen", href: "/shop?fabric=Linen" },
+    { name: "Asooke", href: "/shop?fabric=Asooke" },
+    { name: "Polo Fabric", href: "/shop?fabric=Polo" },
+  ];
+
+  const features = [
+    { title: "Handmade Fabrics", desc: "Every piece is crafted by hand with care and precision." },
+    { title: "African Heritage", desc: "Celebrating traditional fabrics like Ankara, Adire, and Asooke." },
+    { title: "Unisex Fashion", desc: "Stylish, modern designs made for everyone." },
+    { title: "Quality Craftsmanship", desc: "Premium materials and attention to every detail." },
+  ];
+
+  const ig = (process.env.NEXT_PUBLIC_INSTAGRAM_URL || "").trim();
+  const fb = (process.env.NEXT_PUBLIC_FACEBOOK_URL || "").trim();
+
+  function thumbUrl(p: typeof products[number]) {
+    const img = p.images?.[0];
+    if (!img) return "/placeholder.png";
+    return cldImageUrl(img.publicId, { width: 600, height: 800, crop: "fill", quality: "auto", format: "auto" });
+  }
+
+  return (
+    <div>
+      <section className="relative flex min-h-[70vh] items-center justify-center bg-pt-green text-white">
+        )`,
+            }}
+          />
+        )}
+
+        <div className="relative z-10 px-4 text-center">
+<div className="mx-auto mb-6 flex justify-center">
+  <Image src="/logo.png" alt="Pami Threads logo" width={96} height={96} priority />
+</div>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl text-white">
+            Bold African Fabrics.
+            <br />
+            Modern Unisex Style.
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-lg text-gray-200">
+            Handmade African fashion for everyone. Vibrant fabrics, modern designs, crafted with culture.
+          </p>
+          <Link
+            href="/shop"
+            className="mt-8 inline-block rounded-xl bg-white px-8 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-100"
+          >
+            Shop now
+          </Link>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 py-16">
+        <h2 className="text-center text-2xl font-semibold text-white">What Makes Pami Threads Special</h2>
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {features.map((f) => (
+            <div key={f.title} className="rounded-2xl border bg-white p-6 text-center">
+              <div className="text-lg font-semibold">{f.title}</div>
+              <p className="mt-2 text-sm text-gray-600">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {newArrivals.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 py-16">
+          <div className="flex items-end justify-between">
+            <h2 className="text-2xl font-semibold text-white">New Arrivals</h2>
+            <Link href="/shop" className="text-sm font-medium text-gray-600 hover:text-black">
+              View all
+            </Link>
+          </div>
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+            {newArrivals.map((p) => (
+              <ProductCard
+                key={p.id}
+                slug={p.slug}
+                title={p.title}
+                priceCents={p.priceCents}
+                imageUrl={thumbUrl(p)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className="bg-gray-50 py-16">
+        <div className="mx-auto max-w-7xl px-4">
+          <h2 className="text-center text-2xl font-semibold text-white">Shop by Fabric</h2>
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            {collections.map((c) => (
+              <Link
+                key={c.name}
+                href={c.href}
+                className="rounded-2xl border bg-white px-8 py-4 text-sm font-semibold hover:bg-gray-50"
+              >
+                {c.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {bestSellers.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 py-16">
+          <div className="flex items-end justify-between">
+            <h2 className="text-2xl font-semibold text-white">Best Sellers</h2>
+            <Link href="/shop" className="text-sm font-medium text-gray-600 hover:text-black">
+              View all
+            </Link>
+          </div>
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+            {bestSellers.map((p) => (
+              <ProductCard
+                key={p.id}
+                slug={p.slug}
+                title={p.title}
+                priceCents={p.priceCents}
+                imageUrl={thumbUrl(p)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {(ig || fb) ? (
+        <section className="mx-auto max-w-7xl px-4 py-16">
+          <div className="rounded-3xl bg-gradient-to-r from-pt-red via-pt-orange to-pt-green px-6 py-12 text-center text-white sm:px-10">
+            <h2 className="text-2xl font-semibold">Follow Pami Threads</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-gray-200">
+              See new drops, styling ideas, and behind-the-scenes from our studio.
+            </p>
+
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              {ig ? (
+                <a href={ig} target="_blank" rel="noreferrer" className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black hover:bg-gray-100">
+                  Instagram
+                </a>
+              ) : null}
+              {fb ? (
+                <a href={fb} target="_blank" rel="noreferrer" className="rounded-xl border border-white/40 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10">
+                  Facebook
+                </a>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+    </div>
+  );
+}

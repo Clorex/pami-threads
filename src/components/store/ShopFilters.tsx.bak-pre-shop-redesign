@@ -1,0 +1,169 @@
+"use client";
+
+import { useMemo } from "react";
+
+export type Filters = {
+  fabric: string;
+  color: string;
+  size: string;
+  sort: "default" | "price-asc" | "price-desc";
+};
+
+type Variant = {
+  fabric: string;
+  color: string;
+  size: string;
+};
+
+type Product = {
+  variants?: Variant[];
+};
+
+function uniqueValues(products: Product[], field: keyof Variant): string[] {
+  const set = new Set<string>();
+  products.forEach((p) =>
+    (p.variants || []).forEach((v) => {
+      const val = (v[field] || "").trim();
+      if (val) set.add(val);
+    })
+  );
+  return Array.from(set).sort();
+}
+
+export function ShopFilters({
+  products,
+  filters,
+  onChange,
+}: {
+  products: Product[];
+  filters: Filters;
+  onChange: (next: Filters) => void;
+}) {
+  const fabrics = useMemo(() => uniqueValues(products, "fabric"), [products]);
+  const colors = useMemo(() => uniqueValues(products, "color"), [products]);
+  const sizes = useMemo(() => uniqueValues(products, "size"), [products]);
+
+  const hasAny =
+    Boolean(filters.fabric || filters.color || filters.size) ||
+    filters.sort !== "default";
+
+  function toggle(field: "fabric" | "color" | "size", val: string) {
+    onChange({
+      ...filters,
+      [field]: filters[field] === val ? "" : val,
+    });
+  }
+
+  return (
+    <div className="space-y-7">
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-bold text-gray-900">Filters</div>
+        {hasAny ? (
+          <button
+            type="button"
+            onClick={() => onChange({ fabric: "", color: "", size: "", sort: "default" })}
+            className="text-xs font-semibold text-pt-red hover:underline"
+          >
+            Clear
+          </button>
+        ) : null}
+      </div>
+
+      {fabrics.length > 0 ? (
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Fabric
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {fabrics.map((f) => {
+              const active = filters.fabric === f;
+              return (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => toggle("fabric", f)}
+                  className={
+                    active
+                      ? "rounded-full border border-pt-orange bg-pt-orange px-3 py-1.5 text-xs font-semibold text-white"
+                      : "rounded-full border bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 hover:border-pt-orange hover:text-pt-orange"
+                  }
+                >
+                  {f}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      {colors.length > 0 ? (
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Color
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {colors.map((c) => {
+              const active = filters.color === c;
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => toggle("color", c)}
+                  className={
+                    active
+                      ? "rounded-full border border-pt-orange bg-pt-orange px-3 py-1.5 text-xs font-semibold text-white"
+                      : "rounded-full border bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 hover:border-pt-orange hover:text-pt-orange"
+                  }
+                >
+                  {c}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      {sizes.length > 0 ? (
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Size
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {sizes.map((s) => {
+              const active = filters.size === s;
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => toggle("size", s)}
+                  className={
+                    active
+                      ? "rounded-full border border-pt-orange bg-pt-orange px-3 py-1.5 text-xs font-semibold text-white"
+                      : "rounded-full border bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 hover:border-pt-orange hover:text-pt-orange"
+                  }
+                >
+                  {s}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      <div>
+        <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+          Sort
+        </div>
+        <select
+          value={filters.sort}
+          onChange={(e) => onChange({ ...filters, sort: e.target.value as Filters["sort"] })}
+          className="w-full rounded-xl border bg-white px-3 py-2 text-sm"
+        >
+          <option value="default">Featured</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+        </select>
+      </div>
+    </div>
+  );
+}

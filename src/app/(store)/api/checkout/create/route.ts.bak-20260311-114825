@@ -1,0 +1,72 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { requireCustomer } from "@/lib/auth/session";
+import { createBankTransferOrder, type OrderItem } from "@/lib/firebase/orders.repo";
+
+export const runtime = "nodejs";
+
+const Body = z.object({
+  items: z.array(
+    z.object({
+      productId: z.string().min(1),
+      slug: z.string().min(1),
+      title: z.string().min(1),
+      priceCents: z.number().int().positive(),
+      qty: z.number().int().min(1).max(20),
+      imageUrl: z.string().min(1),
+      pick: z.object({
+        fabric: z.string().min(1),
+        size: z.string().min(1),
+        color: z.string().min(1),
+      }),
+    })
+  ).min(1),
+});
+
+function required(name: string) {
+  const v = process.env[name];
+  if (!v) throw new Error(`Missing env: ${name}`);
+  return v;
+}
+
+export async function POST(req: Request) {
+  let customer: { uid: string; email: string };
+  try {
+    customer = await requireCustomer();
+  } catch {
+    return NextResponse.json({ ok: false, message: "Please sign in to checkout." }, { status: 401 });
+  }
+
+  const json = await req.json().catch(() => ({}));
+  const body = Body.parse(json);
+
+  const currency = "usd";
+  const items: OrderItem[] = body.items.map((i) => {
+    const subtotal = i.priceCents * i.qty;
+    return {
+      title: i.title,
+      quantity: i.qty,
+      amountSubtotalCents: subtotal,
+      amountTotalCents: subtotal,
+      currency,
+      pick: i.pick,
+      productId: i.productId,
+      slug: i.slug,
+    };
+  });
+
+  const amountTotalCents = items.reduce((s, it) => s + (it.amountTotalCents || 0), 0);
+
+  const created = await createBankTransferOrder({
+    uid: customer.uid,
+    email: customer.email,
+    currency,
+    amountTotalCents,
+    items,
+  });
+
+  const appUrl = required("NEXT_PUBLIC_APP_URL").replace(/\/+$/g, "");
+  const url = `${appUrl}/checkout/bank-transfer?orderId=${encodeURIComponent(created.id)}`;
+
+  return NextResponse.json({ ok: true, url });
+}

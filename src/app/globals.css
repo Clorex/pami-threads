@@ -3,12 +3,24 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --pt-red: #B33A2D;
+  --pt-orange: #F08C1A;
+  --pt-green: #3F5F2B;
+  --pt-red-hover: #9D3027;
+  --pt-orange-hover: #D97E17;
+  --pt-green-hover: #365225;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+    --color-pt-red: var(--pt-red);
+  --color-pt-orange: var(--pt-orange);
+  --color-pt-green: var(--pt-green);
+  --color-pt-red-hover: var(--pt-red-hover);
+  --color-pt-orange-hover: var(--pt-orange-hover);
+  --color-pt-green-hover: var(--pt-green-hover);
+--font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 

@@ -1,0 +1,22 @@
+const FAQ = [
+  { q: "Do you ship nationwide / worldwide?", a: "Add your shipping locations and delivery timelines here." },
+  { q: "How do I choose my size?", a: "Use the Size Guide in the Shop page for quick sizing help." },
+  { q: "Can I return or exchange?", a: "See Shipping & Returns in Policies." },
+  { q: "How long does it take to make an order?", a: "Add your production time here (ready-to-wear vs made-to-order)." },
+];
+
+export default function FAQPage() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-12">
+      <h1 className="text-3xl font-extrabold text-pt-green">FAQ</h1>
+      <div className="mt-8 space-y-3">
+        {FAQ.map((x) => (
+          <details key={x.q} className="rounded-2xl border bg-white p-5">
+            <summary className="cursor-pointer text-sm font-semibold text-gray-900">{x.q}</summary>
+            <p className="mt-3 text-sm text-gray-600">{x.a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  );
+}

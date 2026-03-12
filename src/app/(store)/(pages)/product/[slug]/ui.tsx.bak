@@ -1,0 +1,83 @@
+"use client";
+
+import { useCallback, useMemo, useState } from "react";
+import { ProductPicker, type Pick } from "@/components/store/ProductPicker";
+import { addToCart } from "@/lib/store/cart";
+
+type Variant = Pick & { stock: number };
+
+export function AddToBag({
+  product,
+  variants,
+}: {
+  product: { productId: string; slug: string; title: string; priceCents: number; imageUrl: string };
+  variants: Variant[];
+}) {
+  const [pick, setPick] = useState<Pick>(() => ({
+    fabric: variants[0]?.fabric || "",
+    size: variants[0]?.size || "",
+    color: variants[0]?.color || "",
+  }));
+  const [stock, setStock] = useState<number>(variants[0]?.stock || 0);
+  const [qty, setQty] = useState(1);
+  const [msg, setMsg] = useState("");
+
+  const onPick = useCallback((p: Pick, s: number) => {
+    setPick(p);
+    setStock(s);
+    setMsg("");
+  }, []);
+
+  const canAdd = useMemo(() => {
+    return Boolean(pick.fabric && pick.size && pick.color) && stock > 0;
+  }, [pick, stock]);
+
+  function add() {
+    setMsg("");
+    if (!canAdd) return setMsg("This option is currently sold out.");
+
+    addToCart({
+      productId: product.productId,
+      slug: product.slug,
+      title: product.title,
+      priceCents: product.priceCents,
+      imageUrl: product.imageUrl,
+      qty,
+      pick,
+    });
+
+    setMsg("Added to bag.");
+  }
+
+  return (
+    <div className="rounded-2xl border bg-white p-5">
+      <div className="text-sm font-semibold">Choose your options</div>
+
+      <div className="mt-4">
+        <ProductPicker variants={variants} onPick={onPick} />
+      </div>
+
+      <div className="mt-4 flex items-center gap-3">
+        <label className="text-sm text-gray-600">Qty</label>
+        <input
+          type="number"
+          min={1}
+          value={qty}
+          onChange={(e) => setQty(Math.max(1, Number(e.target.value || 1)))}
+          className="w-24 rounded-xl border px-3 py-2 text-sm"
+        />
+      </div>
+
+      <button
+        type="button"
+        onClick={add}
+        disabled={!canAdd}
+        className="mt-5 w-full rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
+      >
+        Add to bag
+      </button>
+
+      {msg ? <div className="mt-3 text-sm text-gray-700">{msg}</div> : null}
+    </div>
+  );
+}

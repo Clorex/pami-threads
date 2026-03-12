@@ -1,0 +1,82 @@
+import Link from "next/link";
+
+const FAQ = [
+  {
+    q: "Do you ship worldwide?",
+    a: "Yes — we aim to make Pami Threads available worldwide. Shipping options and costs vary by location. See Policies for details.",
+  },
+  {
+    q: "How long does delivery take?",
+    a: "Delivery time varies by location and carrier. After checkout, you’ll receive updates once your order is processed and shipped.",
+  },
+  {
+    q: "Can I return or exchange?",
+    a: "Our returns/exchanges details will be published in Policies. If anything arrives incorrect or damaged, contact us and we’ll make it right.",
+  },
+  {
+    q: "How do I choose my size?",
+    a: "Use our Size Guide for both letter sizes and waist sizes. If you’re between sizes, we generally recommend sizing up for comfort.",
+  },
+  {
+    q: "How do I care for Ankara/Adire fabrics?",
+    a: "We recommend gentle washing (cold water) and air drying when possible. Avoid harsh bleaching. If in doubt, dry clean for best longevity.",
+  },
+  {
+    q: "Do you offer custom orders?",
+    a: "Custom orders may be available depending on capacity. Send us a message on Instagram with what you’re looking for.",
+  },
+  {
+    q: "Do you offer wholesale/bulk orders?",
+    a: "Yes for select pieces. Contact us on Instagram with quantities, timeline, and shipping destination.",
+  },
+  {
+    q: "What payment methods do you accept?",
+    a: "Payment methods depend on checkout setup. If you can complete checkout, your payment method is supported.",
+  },
+  {
+    q: "How do I track my order?",
+    a: "If tracking is available, it will be sent to you after your order ships. You can also check your account orders page after signing in.",
+  },
+  {
+    q: "What does “unisex fit” mean?",
+    a: "Our designs are made to be worn by anyone. Check the Size Guide and product fit notes for the best match.",
+  },
+];
+
+export default function FAQPage() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-12">
+      <div className="flex items-end justify-between gap-4">
+        <h1 className="text-3xl font-extrabold text-pt-green">FAQ</h1>
+        <Link href="/policies/shipping-returns" className="text-sm font-semibold text-gray-700 hover:text-pt-orange">
+          Policies
+        </Link>
+      </div>
+
+      <p className="mt-3 text-sm text-gray-600">
+        These are default answers (template). You can edit and expand them anytime.
+      </p>
+
+      <div className="mt-8 space-y-3">
+        {FAQ.map((x) => (
+          <details key={x.q} className="rounded-2xl border bg-white p-5">
+            <summary className="cursor-pointer text-sm font-semibold text-gray-900">{x.q}</summary>
+            <p className="mt-3 text-sm text-gray-600">{x.a}</p>
+          </details>
+        ))}
+      </div>
+
+      <div className="mt-10 rounded-2xl border bg-white p-5">
+        <div className="text-sm font-semibold text-gray-900">Still need help?</div>
+        <p className="mt-2 text-sm text-gray-600">
+          Use the Instagram link on the About page to reach us quickly.
+        </p>
+        <div className="mt-4">
+          <Link href="/about" className="rounded-xl bg-pt-orange px-5 py-2.5 text-sm font-semibold text-white hover:bg-pt-orange-hover">
+            Go to About (Contact)
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

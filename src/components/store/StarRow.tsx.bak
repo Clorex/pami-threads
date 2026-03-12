@@ -1,0 +1,16 @@
+import { Star } from "lucide-react";
+
+export function StarRow({ rating }: { rating: number }) {
+  const r = Math.max(0, Math.min(5, Math.round(rating || 0)));
+
+  return (
+    <div className="flex items-center gap-1" aria-label={`${r} out of 5`}>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star
+          key={i}
+          className={`h-4 w-4 ${i < r ? "fill-black text-black" : "text-gray-300"}`}
+        />
+      ))}
+    </div>
+  );
+}

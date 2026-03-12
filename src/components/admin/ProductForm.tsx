@@ -1,0 +1,284 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { ImageUploader, type ProductImage } from "@/components/admin/ImageUploader";
+import { toSlug } from "@/lib/store/slug";
+import { Plus, Trash2 } from "lucide-react";
+
+type Variant = {
+  size: string;
+  fabric: string;
+  color: string;
+  stock: number;
+  sku?: string;
+};
+
+export type ProductFormValues = {
+  title: string;
+  slug: string;
+  description: string;
+  fitNotes: string;
+  priceDollars: string;
+  isActive: boolean;
+  collectionsCsv: string;
+  images: ProductImage[];
+  variants: Variant[];
+};
+
+export function ProductForm({
+  initial,
+  onSaved,
+  submitLabel,
+  submitTo,
+  method,
+}: {
+  initial?: Partial<ProductFormValues>;
+  onSaved?: (id?: string) => void;
+  submitLabel: string;
+  submitTo: string;
+  method: "POST" | "PATCH";
+}) {
+  const form = useForm<ProductFormValues>({
+    defaultValues: {
+      title: initial?.title || "",
+      slug: initial?.slug || "",
+      description: initial?.description || "",
+      fitNotes: initial?.fitNotes || "",
+      priceDollars: initial?.priceDollars || "",
+      isActive: initial?.isActive ?? true,
+      collectionsCsv: initial?.collectionsCsv || "",
+      images: initial?.images || [],
+      variants: initial?.variants || [{ size: "M", fabric: "Ankara", color: "Multi", stock: 0 }],
+    },
+  });
+
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [fabricView, setFabricView] = useState<string>("All");
+
+  const variants = form.watch("variants");
+  const images = form.watch("images");
+
+  const fabrics = useMemo(() => {
+    const set = new Set<string>();
+    (variants || []).forEach((v) => {
+      const f = (v.fabric || "").trim();
+      if (f) set.add(f);
+    });
+    return ["All", ...Array.from(set).sort()];
+  }, [variants]);
+
+  useEffect(() => {
+    if (!fabrics.includes(fabricView)) setFabricView("All");
+  }, [fabrics, fabricView]);
+
+  function addVariant() {
+    const current = form.getValues("variants") || [];
+    const nextFabric = fabricView !== "All" ? fabricView : (current[current.length - 1]?.fabric || "Ankara");
+    form.setValue("variants", [...current, { size: "M", fabric: nextFabric, color: "Multi", stock: 0 }], { shouldDirty: true });
+  }
+
+  function removeVariant(idx: number) {
+    const current = form.getValues("variants") || [];
+    form.setValue("variants", current.filter((_, i) => i !== idx), { shouldDirty: true });
+  }
+
+  async function submit(values: ProductFormValues) {
+    setMsg("");
+
+    if (!values.images?.length) return setMsg("Please add at least 1 image.");
+    if (!values.variants?.length) return setMsg("Please add at least 1 option.");
+
+    const price = Number(values.priceDollars);
+    if (!Number.isFinite(price) || price <= 0) return setMsg("Enter a valid price.");
+
+    const priceCents = Math.round(price * 100);
+
+    const payload = {
+      title: values.title.trim(),
+      slug: (values.slug || "").trim() ? toSlug(values.slug) : toSlug(values.title),
+      description: values.description || "",
+      fitNotes: values.fitNotes || "",
+      priceCents,
+      currency: "USD" as const,
+      collections: (values.collectionsCsv || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      isActive: Boolean(values.isActive),
+      images: values.images.map((i) => ({
+        publicId: i.publicId,
+        secureUrl: i.secureUrl,
+        width: i.width,
+        height: i.height,
+        bytes: i.bytes,
+        format: i.format,
+        alt: i.alt || "",
+      })),
+      variants: values.variants.map((v) => ({
+        size: (v.size || "").trim(),
+        fabric: (v.fabric || "").trim(),
+        color: (v.color || "").trim(),
+        stock: Number(v.stock || 0),
+        sku: v.sku?.trim() || undefined,
+      })),
+    };
+
+    if (!payload.title) return setMsg("Title is required.");
+    if (!payload.slug) return setMsg("Slug is required.");
+    if (!payload.variants.every((v) => v.size && v.fabric && v.color)) return setMsg("Each option needs Size, Fabric, and Color.");
+
+    try {
+      setSaving(true);
+      const r = await fetch(submitTo, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j?.message || "Could not save");
+
+      setMsg("Saved.");
+      onSaved?.(j?.id);
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Could not save");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const visibleVariantIndexes = useMemo(() => {
+    if (fabricView === "All") return variants.map((_, idx) => idx);
+    const idxs: number[] = [];
+    variants.forEach((v, idx) => {
+      if ((v.fabric || "").trim() === fabricView) idxs.push(idx);
+    });
+    return idxs;
+  }, [variants, fabricView]);
+
+  return (
+    <form onSubmit={form.handleSubmit(submit)} className="space-y-8">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <label className="text-sm font-medium">Title</label>
+          <input className="mt-2 w-full rounded-xl border px-3 py-2" {...form.register("title")} placeholder="Ankara Unisex Shirt" />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">Slug</label>
+          <input className="mt-2 w-full rounded-xl border px-3 py-2" {...form.register("slug")} placeholder="ankara-unisex-shirt" />
+          <div className="mt-1 text-xs text-gray-500">Leave blank to auto-generate from title.</div>
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="text-sm font-medium">Description</label>
+          <textarea className="mt-2 w-full rounded-xl border px-3 py-2" rows={4} {...form.register("description")} />
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="text-sm font-medium">Fit notes</label>
+          <textarea className="mt-2 w-full rounded-xl border px-3 py-2" rows={3} {...form.register("fitNotes")} placeholder="Example: Unisex fit. True to size. If between sizes, size up." />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">Price (USD)</label>
+          <input className="mt-2 w-full rounded-xl border px-3 py-2" {...form.register("priceDollars")} placeholder="120" />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">Collections (comma-separated)</label>
+          <input className="mt-2 w-full rounded-xl border px-3 py-2" {...form.register("collectionsCsv")} placeholder="New Arrivals, Best Sellers" />
+        </div>
+
+        <label className="flex items-center gap-2 text-sm md:col-span-2">
+          <input type="checkbox" {...form.register("isActive")} />
+          Active (visible in shop)
+        </label>
+      </div>
+
+      <div>
+        <div className="mb-3">
+          <div className="text-sm font-medium">Images</div>
+          <div className="text-xs text-gray-500">Upload product photos (compressed automatically).</div>
+        </div>
+
+        <ImageUploader value={images} onChange={(next) => form.setValue("images", next, { shouldDirty: true })} />
+      </div>
+
+      <div>
+        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="text-sm font-medium">Options</div>
+            <div className="text-xs text-gray-500">Size + Fabric + Color (stock tracked per option).</div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div>
+              <div className="text-xs text-gray-500">View</div>
+              <select
+                className="mt-1 rounded-xl border px-3 py-2 text-sm"
+                value={fabricView}
+                onChange={(e) => setFabricView(e.target.value)}
+              >
+                {fabrics.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              type="button"
+              onClick={addVariant}
+              className="inline-flex items-center gap-2 rounded-xl bg-pt-orange hover:bg-pt-orange-hover px-4 py-2 text-sm text-white"
+            >
+              <Plus className="h-4 w-4" />
+              Add option
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-2xl border bg-white">
+          <div className="grid grid-cols-12 gap-2 border-b bg-gray-50 px-3 py-2 text-xs font-medium text-gray-600">
+            <div className="col-span-3">Size</div>
+            <div className="col-span-3">Fabric</div>
+            <div className="col-span-3">Color</div>
+            <div className="col-span-2">Stock</div>
+            <div className="col-span-1"></div>
+          </div>
+
+          <div className="divide-y">
+            {visibleVariantIndexes.map((idx) => (
+              <div key={idx} className="grid grid-cols-12 gap-2 px-3 py-2">
+                <input className="col-span-3 rounded-xl border px-3 py-2 text-sm" {...form.register(`variants.${idx}.size` as const)} placeholder="XL / 34" />
+                <input className="col-span-3 rounded-xl border px-3 py-2 text-sm" {...form.register(`variants.${idx}.fabric` as const)} placeholder="Ankara" />
+                <input className="col-span-3 rounded-xl border px-3 py-2 text-sm" {...form.register(`variants.${idx}.color` as const)} placeholder="Blue" />
+                <input
+                  className="col-span-2 rounded-xl border px-3 py-2 text-sm"
+                  type="number"
+                  min={0}
+                  {...form.register(`variants.${idx}.stock` as const, { valueAsNumber: true })}
+                />
+                <button type="button" onClick={() => removeVariant(idx)} className="col-span-1 flex items-center justify-center rounded-xl border hover:bg-gray-50">
+                  <Trash2 className="h-4 w-4 text-gray-700" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-2 text-xs text-gray-500">
+          Sizes can be letters (S/M/L/XL) or numbers (30/32/34).
+        </div>
+      </div>
+
+      {msg ? <div className="text-sm text-gray-700">{msg}</div> : null}
+
+      <button disabled={saving} className="rounded-xl bg-pt-orange hover:bg-pt-orange-hover px-5 py-2.5 text-sm text-white disabled:opacity-60" type="submit">
+        {saving ? "Saving..." : submitLabel}
+      </button>
+    </form>
+  );
+}

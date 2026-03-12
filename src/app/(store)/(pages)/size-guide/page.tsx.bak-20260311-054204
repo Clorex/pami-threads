@@ -1,0 +1,20 @@
+export default function SizeGuidePage() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-12">
+      <h1 className="text-3xl font-extrabold text-pt-green">Size Guide</h1>
+      <p className="mt-4 text-sm text-gray-600">
+        Add your sizing chart here. If you sell unisex fits, include chest, waist, hip, and height guidance.
+      </p>
+
+      <div className="mt-8 rounded-2xl border bg-white p-6">
+        <div className="text-sm font-semibold text-gray-900">Example (replace with your real chart)</div>
+        <ul className="mt-3 list-disc pl-5 text-sm text-gray-600 space-y-1">
+          <li>S: 28–30</li>
+          <li>M: 31–33</li>
+          <li>L: 34–36</li>
+          <li>XL: 37–40</li>
+        </ul>
+      </div>
+    </div>
+  );
+}

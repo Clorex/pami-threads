@@ -1,0 +1,129 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getProductBySlug, listApprovedReviewsByProduct } from "@/lib/firebase";
+import { cldImageUrl } from "@/lib/cloudinary/url";
+import { ProductGallery } from "@/components/store/ProductGallery";
+import { SizeGuide } from "@/components/store/SizeGuide";
+import { AddToBag } from "./ui";
+import { ReviewsSection, type ReviewView } from "@/components/store/ReviewsSection";
+import { getSession } from "@/lib/auth/session";
+
+export const revalidate = 60;
+
+type ProductVariantView = {
+  fabric: string;
+  size: string;
+  color: string;
+  stock: number;
+};
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const product = await getProductBySlug(params.slug);
+  if (!product || !product.isActive) return {};
+
+  const img = product.images?.[0];
+  const imageUrl = img
+    ? cldImageUrl(img.publicId, { width: 1200, height: 1600, crop: "fill", quality: "auto", format: "auto" })
+    : undefined;
+
+  const desc = (product.description || product.fitNotes || "Handmade African fashion for everyone.").slice(0, 160);
+
+  return {
+    title: product.title,
+    description: desc,
+    openGraph: {
+      title: product.title,
+      description: desc,
+      images: imageUrl ? [{ url: imageUrl }] : undefined,
+      type: "product",
+    },
+  };
+}
+
+export default async function ProductPage({ params }: { params: { slug: string } }) {
+  const product = await getProductBySlug(params.slug);
+  if (!product || !product.isActive) return notFound();
+
+  const session = await getSession();
+  const signedIn = session?.kind === "customer";
+
+  const images = (product.images || []).map((img) => ({
+    url: cldImageUrl(img.publicId, {
+      width: 1200,
+      height: 1600,
+      crop: "fill",
+      quality: "auto",
+      format: "auto",
+    }),
+    alt: img.alt || product.title,
+  }));
+
+  const variants: ProductVariantView[] = (product.variants || []).map((v) => ({
+    fabric: v.fabric,
+    size: v.size,
+    color: v.color,
+    stock: Number(v.stock || 0),
+  }));
+
+  const primaryCollection = (product.collections || [])[0] || "";
+  const heroImage = images[0]?.url || "/placeholder.png";
+
+  const rawReviews = await listApprovedReviewsByProduct(product.id, 25);
+  const reviews: ReviewView[] = rawReviews.map((r) => ({
+    id: r.id,
+    rating: Number(r.rating || 0),
+    text: r.text || "",
+    userEmail: r.userEmail,
+    createdAtMs: r.createdAtMs,
+  }));
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-10">
+      <div className="grid gap-10 lg:grid-cols-2">
+        <ProductGallery images={images} title={product.title} />
+
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight">{product.title}</h1>
+            <div className="mt-2 text-lg text-gray-700">
+              ${(product.priceCents / 100).toFixed(2)}
+            </div>
+          </div>
+
+          <AddToBag
+            product={{
+              productId: product.id,
+              slug: product.slug,
+              title: product.title,
+              priceCents: product.priceCents,
+              imageUrl: heroImage,
+            }}
+            variants={variants}
+          />
+
+          {product.fitNotes ? (
+            <div className="rounded-2xl border bg-white p-5">
+              <div className="text-sm font-semibold">Fit notes</div>
+              <div className="mt-2 whitespace-pre-line text-sm text-gray-600">
+                {product.fitNotes}
+              </div>
+            </div>
+          ) : null}
+
+          <SizeGuide collectionKey={primaryCollection} />
+
+          {product.description ? (
+            <div className="rounded-2xl border bg-white p-5">
+              <div className="text-sm font-semibold">Details</div>
+              <div className="mt-2 whitespace-pre-line text-sm text-gray-600">
+                {product.description}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <ReviewsSection productId={product.id} signedIn={signedIn} reviews={reviews} />
+    </div>
+  );
+}

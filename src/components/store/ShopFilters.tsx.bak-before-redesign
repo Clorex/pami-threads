@@ -1,0 +1,165 @@
+"use client";
+
+import { useMemo } from "react";
+import { X } from "lucide-react";
+
+export type Filters = {
+  fabric: string;
+  color: string;
+  size: string;
+  sort: "default" | "price-asc" | "price-desc";
+};
+
+type Variant = {
+  fabric: string;
+  color: string;
+  size: string;
+};
+
+type Product = {
+  variants?: Variant[];
+};
+
+function uniqueValues(products: Product[], field: keyof Variant): string[] {
+  const set = new Set<string>();
+  products.forEach((p) =>
+    (p.variants || []).forEach((v) => {
+      const val = (v[field] || "").trim();
+      if (val) set.add(val);
+    })
+  );
+  return Array.from(set).sort();
+}
+
+export function ShopFilters({
+  products,
+  filters,
+  onChange,
+}: {
+  products: Product[];
+  filters: Filters;
+  onChange: (next: Filters) => void;
+}) {
+  const fabrics = useMemo(() => uniqueValues(products, "fabric"), [products]);
+  const colors = useMemo(() => uniqueValues(products, "color"), [products]);
+  const sizes = useMemo(() => uniqueValues(products, "size"), [products]);
+
+  const hasAny =
+    Boolean(filters.fabric || filters.color || filters.size) ||
+    filters.sort !== "default";
+
+  function toggle(field: "fabric" | "color" | "size", val: string) {
+    onChange({
+      ...filters,
+      [field]: filters[field] === val ? "" : val,
+    });
+  }
+
+  function clearAll() {
+    onChange({ fabric: "", color: "", size: "", sort: "default" });
+  }
+
+  return (
+    <div className="space-y-6">
+      {hasAny && (
+        <button
+          type="button"
+          onClick={clearAll}
+          className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium hover:bg-gray-50"
+        >
+          <X className="h-3 w-3" />
+          Clear filters
+        </button>
+      )}
+
+      {fabrics.length > 0 && (
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Fabric
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {fabrics.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => toggle("fabric", f)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  filters.fabric === f
+                    ? "border-pt-orange bg-pt-orange text-white"
+                    : "hover:bg-gray-50"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {colors.length > 0 && (
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Color
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {colors.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => toggle("color", c)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  filters.color === c
+                    ? "border-pt-orange bg-pt-orange text-white"
+                    : "hover:bg-gray-50"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {sizes.length > 0 && (
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Size
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {sizes.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => toggle("size", s)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  filters.size === s
+                    ? "border-pt-orange bg-pt-orange text-white"
+                    : "hover:bg-gray-50"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+          Sort by price
+        </div>
+        <select
+          value={filters.sort}
+          onChange={(e) =>
+            onChange({ ...filters, sort: e.target.value as Filters["sort"] })
+          }
+          className="w-full rounded-xl border px-3 py-2 text-sm"
+        >
+          <option value="default">Default</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+        </select>
+      </div>
+    </div>
+  );
+}

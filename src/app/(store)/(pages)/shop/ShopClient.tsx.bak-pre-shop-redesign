@@ -1,0 +1,157 @@
+"use client";
+
+import clsx from "clsx";
+import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { ShopFilters, type Filters } from "@/components/store/ShopFilters";
+import { ProductCard } from "@/components/store/ProductCard";
+import type { ShopProduct } from "./page";
+import { SlidersHorizontal, X } from "lucide-react";
+
+function gridCols(n: number) {
+  if (n <= 1) return "lg:grid-cols-1";
+  if (n === 2) return "lg:grid-cols-2";
+  if (n === 3) return "lg:grid-cols-3";
+  return "lg:grid-cols-4";
+}
+
+export function ShopClient({ products }: { products: ShopProduct[] }) {
+  const searchParams = useSearchParams();
+  const initialFabric = searchParams.get("fabric") || "";
+
+  const [filters, setFilters] = useState<Filters>(() => ({
+    fabric: initialFabric,
+    color: "",
+    size: "",
+    sort: "default",
+  }));
+
+  const [showFilters, setShowFilters] = useState(false);
+
+  const filtered = useMemo(() => {
+    let result = [...products];
+
+    if (filters.fabric) {
+      const f = filters.fabric.toLowerCase();
+      result = result.filter((p) => p.variants.some((v) => (v.fabric || "").toLowerCase() === f));
+    }
+    if (filters.color) {
+      const c = filters.color.toLowerCase();
+      result = result.filter((p) => p.variants.some((v) => (v.color || "").toLowerCase() === c));
+    }
+    if (filters.size) {
+      const s = filters.size.toLowerCase();
+      result = result.filter((p) => p.variants.some((v) => (v.size || "").toLowerCase() === s));
+    }
+
+    if (filters.sort === "price-asc") result.sort((a, b) => a.priceCents - b.priceCents);
+    if (filters.sort === "price-desc") result.sort((a, b) => b.priceCents - a.priceCents);
+
+    return result;
+  }, [products, filters]);
+
+  const hasActive =
+    Boolean(filters.fabric || filters.color || filters.size) || filters.sort !== "default";
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-8">
+      {/* Top bar */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-pt-green">Shop</h1>
+          <p className="mt-1 text-sm text-gray-600">
+            {filtered.length} {filtered.length === 1 ? "product" : "products"}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowFilters((v) => !v)}
+          className="inline-flex items-center justify-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:border-pt-orange hover:text-pt-orange md:hidden"
+        >
+          {showFilters ? <X className="h-4 w-4" /> : <SlidersHorizontal className="h-4 w-4" />}
+          {showFilters ? "Close filters" : "Filters"}
+        </button>
+      </div>
+
+      {/* Active filter chips */}
+      {hasActive ? (
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          {filters.fabric ? (
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-800">
+              Fabric: {filters.fabric}
+            </span>
+          ) : null}
+          {filters.color ? (
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-800">
+              Color: {filters.color}
+            </span>
+          ) : null}
+          {filters.size ? (
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-800">
+              Size: {filters.size}
+            </span>
+          ) : null}
+          {filters.sort !== "default" ? (
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-800">
+              Sort: {filters.sort === "price-asc" ? "Low → High" : "High → Low"}
+            </span>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={() => setFilters({ fabric: "", color: "", size: "", sort: "default" })}
+            className="ml-1 rounded-full border px-3 py-1 text-xs font-semibold text-gray-700 hover:border-pt-red hover:text-pt-red"
+          >
+            Clear all
+          </button>
+        </div>
+      ) : null}
+
+      <div className="mt-8 grid gap-6 md:grid-cols-[280px_1fr]">
+        {/* Filters */}
+        <aside className={clsx("md:block", showFilters ? "block" : "hidden")}>
+          <div className="rounded-2xl border bg-white p-4 shadow-sm md:sticky md:top-24">
+            <ShopFilters
+              products={products}
+              filters={filters}
+              onChange={(next) => {
+                setFilters(next);
+                setShowFilters(false);
+              }}
+            />
+          </div>
+        </aside>
+
+        {/* Results */}
+        <div className="min-w-0">
+          {filtered.length > 0 ? (
+            <div className={clsx("grid grid-cols-2 gap-4 sm:gap-6", gridCols(filtered.length))}>
+              {filtered.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  slug={p.slug}
+                  title={p.title}
+                  priceCents={p.priceCents}
+                  imageUrl={p.imageUrl}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border bg-white p-10 text-center">
+              <div className="text-base font-semibold text-gray-900">No products match your filters.</div>
+              <p className="mt-2 text-sm text-gray-600">Try clearing filters or choosing a different fabric.</p>
+              <button
+                type="button"
+                onClick={() => setFilters({ fabric: "", color: "", size: "", sort: "default" })}
+                className="mt-5 rounded-xl bg-pt-orange px-6 py-3 text-sm font-semibold text-white hover:bg-pt-orange-hover"
+              >
+                Clear filters
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

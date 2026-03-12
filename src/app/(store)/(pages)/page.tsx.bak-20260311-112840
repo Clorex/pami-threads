@@ -1,0 +1,193 @@
+import Link from "next/link";
+import { listActiveProducts } from "@/lib/firebase";
+import { cldImageUrl } from "@/lib/cloudinary/url";
+import { ProductCard } from "@/components/store/ProductCard";
+import { Sparkles, Scissors, Users, ShieldCheck } from "lucide-react";
+import clsx from "clsx";
+
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const products = await listActiveProducts(24);
+
+  const newArrivals = products.slice(0, 8);
+  const bestSellers = products
+    .filter((p) => (p.collections || []).some((c) => c.toLowerCase().includes("best")))
+    .slice(0, 8);
+
+  const collections = [
+    { name: "Ankara", href: "/shop?fabric=Ankara" },
+    { name: "Adire", href: "/shop?fabric=Adire" },
+    { name: "Linen", href: "/shop?fabric=Linen" },
+    { name: "Asooke", href: "/shop?fabric=Asooke" },
+    { name: "Polo Fabric", href: "/shop?fabric=Polo" },
+  ];
+
+  const features = [
+    { title: "Handmade Fabrics", desc: "Every piece is crafted by hand with care and precision.", Icon: Scissors, accent: "border-pt-green" },
+    { title: "African Heritage", desc: "Celebrating traditional fabrics like Ankara, Adire, and Asooke.", Icon: Sparkles, accent: "border-pt-orange" },
+    { title: "Unisex Fashion", desc: "Modern designs made for everyone.", Icon: Users, accent: "border-pt-red" },
+    { title: "Quality Craftsmanship", desc: "Premium materials and attention to every detail.", Icon: ShieldCheck, accent: "border-pt-green" },
+  ];
+
+  function thumbUrl(p: typeof products[number]) {
+    const img = p.images?.[0];
+    if (!img) return "/placeholder.svg";
+    return cldImageUrl((img as any).publicId || (img as any).secureUrl || "", { width: 800, height: 1000, crop: "fill", quality: "auto", format: "auto" });
+  }
+
+  return (
+    <div>
+      {/* HERO (inspired by modern store layouts, but original) */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-pt-green via-pt-orange to-pt-red opacity-90" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.22),transparent_50%),radial-gradient(circle_at_80%_25%,rgba(255,255,255,0.14),transparent_55%)]" />
+
+        <div className="relative mx-auto grid min-h-[72vh] max-w-7xl items-center gap-10 px-4 py-16 text-white lg:grid-cols-2 lg:text-left">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-semibold tracking-wide">
+              Handmade Ã¢â‚¬Â¢ Bold prints Ã¢â‚¬Â¢ Unisex
+            </div>
+
+            <h1 className="mt-6 text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
+              Bold African Fabrics.
+              <br />
+              Modern Unisex Style.
+            </h1>
+
+            <p className="mt-4 max-w-xl text-base text-white/90 sm:text-lg">
+              Handmade African fashion for everyone. Vibrant fabrics, modern designs, crafted with culture.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/shop"
+                className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-100"
+              >
+                Shop now
+              </Link>
+              <Link
+                href="/shop"
+                className="inline-flex items-center justify-center rounded-xl border border-white/45 bg-white/10 px-8 py-3 text-sm font-semibold text-white hover:bg-white/15"
+              >
+                Explore fabrics
+              </Link>
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-2">
+              {collections.map((c) => (
+                <Link
+                  key={c.name}
+                  href={c.href}
+                  className="rounded-full bg-white/15 px-4 py-2 text-xs font-semibold text-white hover:bg-white/20"
+                >
+                  {c.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Right side: small Ã¢â‚¬Å“lookbookÃ¢â‚¬Â style grid using first 3 products if available */}
+          <div className="hidden lg:block">
+            <div className="grid grid-cols-3 gap-4">
+              {products.slice(0, 3).map((p, idx) => (
+                <div
+                  key={p.id}
+                  className={clsx(
+                    "overflow-hidden rounded-3xl border border-white/20 bg-white/10",
+                    idx === 0 ? "col-span-2 row-span-2" : ""
+                  )}
+                >
+                  <img
+                    src={thumbUrl(p)}
+                    alt={p.title}
+                    className={clsx("h-full w-full object-cover", idx === 0 ? "aspect-[4/5]" : "aspect-[3/4]")}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section className="mx-auto max-w-7xl px-4 py-14">
+        <h2 className="text-center text-2xl font-bold text-pt-green">What Makes Pami Threads Special</h2>
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {features.map(({ title, desc, Icon, accent }) => (
+            <div key={title} className={clsx("rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-md", "border-t-4", accent)}>
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-gray-50 p-2">
+                  <Icon className="h-5 w-5 text-gray-900" />
+                </div>
+                <div className="text-base font-semibold text-gray-900">{title}</div>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-gray-600">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* NEW ARRIVALS (mobile carousel feel) */}
+      <section className="mx-auto max-w-7xl px-4 py-10">
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="text-xl font-bold text-pt-green sm:text-2xl">New Arrivals</h2>
+          <Link href="/shop" className="text-sm font-semibold text-gray-700 hover:text-pt-orange">
+            View all
+          </Link>
+        </div>
+
+        {newArrivals.length ? (
+          <div className="mt-6 grid grid-cols-2 gap-4 justify-items-center sm:grid-cols-3 sm:gap-5 md:grid-cols-4 lg:grid-cols-5">
+            {newArrivals.map((p) => (
+              <div key={p.id} className="snap-start">
+                <div className="w-full max-w-[220px]"><ProductCard slug={p.slug} title={p.title} priceCents={p.priceCents} imageUrl={thumbUrl(p)} /></div></div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-6 rounded-2xl border bg-white p-10 text-center text-sm text-gray-600">
+            No products yet. Add products in Admin Ã¢â€ â€™ Products.
+          </div>
+        )}
+      </section>
+
+      {/* SHOP BY FABRIC */}
+      <section className="bg-gray-50 py-14">
+        <div className="mx-auto max-w-7xl px-4">
+          <h2 className="text-center text-xl font-bold text-pt-green sm:text-2xl">Shop by Fabric</h2>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            {collections.map((c) => (
+              <Link key={c.name} href={c.href} className="rounded-full border bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 hover:border-pt-orange hover:text-pt-orange">
+                {c.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* BEST SELLERS */}
+      <section className="mx-auto max-w-7xl px-4 py-10">
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="text-xl font-bold text-pt-green sm:text-2xl">Best Sellers</h2>
+          <Link href="/shop" className="text-sm font-semibold text-gray-700 hover:text-pt-orange">
+            View all
+          </Link>
+        </div>
+
+        {bestSellers.length ? (
+          <div className="mt-6 grid grid-flow-col auto-cols-[75%] gap-4 overflow-x-auto pb-2 pr-4 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-2 lg:grid-cols-4">
+            {bestSellers.map((p) => (
+              <div key={p.id} className="snap-start">
+                <ProductCard slug={p.slug} title={p.title} priceCents={p.priceCents} imageUrl={thumbUrl(p)} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-6 rounded-2xl border bg-white p-10 text-center text-sm text-gray-600">
+            Mark products with a collection containing "best" (e.g. "Best Sellers") to show them here.
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}

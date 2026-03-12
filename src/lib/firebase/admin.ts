@@ -1,0 +1,32 @@
+import "server-only";
+
+import { cert, getApps, initializeApp } from "firebase-admin/app";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
+
+function required(name: string) {
+  const v = process.env[name];
+  if (!v) throw new Error(`Missing env: ${name}`);
+  return v;
+}
+
+const projectId = required("FIREBASE_PROJECT_ID");
+const clientEmail = required("FIREBASE_CLIENT_EMAIL");
+const privateKeyRaw = required("FIREBASE_PRIVATE_KEY");
+const privateKey = privateKeyRaw.replace(/\\n/g, "\n");
+
+const app =
+  getApps().length > 0
+    ? getApps()[0]!
+    : initializeApp({
+        credential: cert({
+          projectId,
+          clientEmail,
+          privateKey,
+        }),
+      });
+
+export const db = getFirestore(app);
+if (!(globalThis as any).__pt_firestoreSettingsApplied) {
+  db.settings({ ignoreUndefinedProperties: true });
+  (globalThis as any).__pt_firestoreSettingsApplied = true;
+}export const serverTimestamp = () => FieldValue.serverTimestamp();
