@@ -132,15 +132,16 @@ export default function AboutPage() {
             </h1>
 
             <p className="mt-3 max-w-3xl text-sm text-white/90 sm:text-base">
-              Pami Threads is a unisex clothing brand bringing Nigerian heritage
+              Pami Threads is a unisex clothing brand bringing bold vintage Afri heritage
               fabrics into a clean, bold, modern Afro-fusion style. We blend
               vibrant textiles like Ankara, Adire (including handmade Adire),
               and Asooke with wearable silhouettes and everyday comfort—so you
               can stand out without trying too hard.
             </p>
 
+
             <div className="mt-5 flex flex-wrap items-center gap-3">
-              <Pill>Australia-based • Nigerian-inspired • Unisex</Pill>
+              <Pill>Australia-based • Africa-inspired • Unisex</Pill>
 
               <Link
                 href="/shop"
@@ -191,14 +192,14 @@ export default function AboutPage() {
             </div>
 
             <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-gray-900">
-              Nigerian heritage—made for today
+              African heritage—made for today
             </h2>
 
             <div className="mt-4 space-y-4 text-sm leading-6 text-gray-600">
               <p>
                 Pami Threads was created for people who love culture, colour, and
                 confident style—but still want pieces that feel modern and easy
-                to wear. Our designs are rooted in Nigerian heritage fabrics and
+                to wear. Our designs are rooted in African heritage fabrics and
                 reworked into clean, bold silhouettes that fit into everyday
                 life.
               </p>
@@ -267,7 +268,7 @@ export default function AboutPage() {
             <InfoCard
               icon={<Target className="h-5 w-5" />}
               title="Our Mission"
-              body="To create unisex pieces that celebrate Nigerian heritage fabrics through modern, wearable design—bold enough to stand out and effortless enough for everyday."
+              body="To create unisex pieces that celebrate African heritage fabrics through modern, wearable design—bold enough to stand out and effortless enough for everyday."
             />
             <InfoCard
               icon={<Eye className="h-5 w-5" />}

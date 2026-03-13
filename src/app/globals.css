@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 :root {
   --background: #ffffff;
@@ -36,3 +36,74 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* PT_ANIMATIONS_START */
+/* Lightweight, GPU-friendly animations (transform/opacity). Respects reduced motion. */
+
+.pt-ambient {
+  position: relative;
+  isolation: isolate;
+}
+
+.pt-ambient::before,
+.pt-ambient::after {
+  content: "";
+  position: absolute;
+  inset: -120px;
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(40px);
+  opacity: 0.55;
+  transform: translate3d(0,0,0);
+  will-change: transform, opacity;
+}
+
+.pt-ambient::before {
+  background:
+    radial-gradient(circle at 20% 25%, rgba(240, 140, 26, 0.22), transparent 45%),
+    radial-gradient(circle at 75% 35%, rgba(63, 95, 43, 0.20), transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(179, 58, 45, 0.14), transparent 55%);
+  animation: ptAmbientFloat1 18s ease-in-out infinite;
+}
+
+.pt-ambient::after {
+  background:
+    radial-gradient(circle at 30% 70%, rgba(63, 95, 43, 0.14), transparent 55%),
+    radial-gradient(circle at 80% 75%, rgba(240, 140, 26, 0.16), transparent 50%);
+  animation: ptAmbientFloat2 22s ease-in-out infinite;
+  opacity: 0.45;
+}
+
+@keyframes ptAmbientFloat1 {
+  0%   { transform: translate3d(-18px, -10px, 0) scale(1.02); }
+  50%  { transform: translate3d(18px, 14px, 0)  scale(1.05); }
+  100% { transform: translate3d(-18px, -10px, 0) scale(1.02); }
+}
+
+@keyframes ptAmbientFloat2 {
+  0%   { transform: translate3d(14px, 18px, 0)  scale(1.01); }
+  50%  { transform: translate3d(-14px, -12px, 0) scale(1.06); }
+  100% { transform: translate3d(14px, 18px, 0)  scale(1.01); }
+}
+
+/* Cart badge bump (runs only when count changes) */
+@keyframes ptBadgeBump {
+  0%   { transform: translateZ(0) scale(1); }
+  45%  { transform: translateZ(0) scale(1.22); }
+  100% { transform: translateZ(0) scale(1); }
+}
+.pt-badge-bump {
+  animation: ptBadgeBump 260ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pt-ambient::before,
+  .pt-ambient::after {
+    animation: none !important;
+  }
+  .pt-badge-bump {
+    animation: none !important;
+  }
+}
+/* PT_ANIMATIONS_END */
+

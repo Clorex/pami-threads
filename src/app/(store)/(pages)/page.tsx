@@ -457,7 +457,7 @@ export default async function HomePage() {
               <SectionHeading
                 eyebrow="ABOUT US"
                 title="Delivering heritage fabrics with a modern finish"
-                desc="We blend Nigerian-inspired textiles with clean silhouettes and everyday comfort — so you can wear culture confidently, day to day."
+                desc="We blend Ultimate Afri-inspired textiles with clean silhouettes and everyday comfort — so you can wear culture confidently, day to day."
               />
 
               <div className="mt-6 grid gap-4 sm:grid-cols-3">
