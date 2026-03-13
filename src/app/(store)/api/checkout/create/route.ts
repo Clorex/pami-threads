@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { stripe } from "@/lib/stripe/server";
-import { requireCustomer } from "@/lib/auth/session";
 
 const Body = z.object({
   items: z
@@ -31,14 +30,6 @@ function required(name: string) {
 }
 
 export async function POST(req: Request) {
-  let customer: { uid: string; email: string };
-
-  try {
-    customer = await requireCustomer();
-  } catch {
-    return NextResponse.json({ ok: false, message: "Please sign in to checkout." }, { status: 401 });
-  }
-
   const json = await req.json().catch(() => ({}));
   const body = Body.parse(json);
 
@@ -46,8 +37,9 @@ export async function POST(req: Request) {
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
-    customer_email: customer.email,
-    client_reference_id: customer.uid,
+
+    // Let Stripe collect email during checkout (no customer account needed)
+    // customer_email: undefined,
 
     shipping_address_collection: {
       allowed_countries: ["AU", "NG", "US", "CA", "GB", "NZ"],
@@ -77,8 +69,7 @@ export async function POST(req: Request) {
     cancel_url: `${appUrl}/checkout/cancel`,
 
     metadata: {
-      uid: customer.uid,
-      email: customer.email,
+      source: "pami-threads",
     },
   });
 

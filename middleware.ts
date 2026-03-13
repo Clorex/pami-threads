@@ -38,6 +38,7 @@ export async function middleware(req: NextRequest) {
 
   const session = await readSession(req);
 
+  // Admin protection only
   if (pathname.startsWith("/admin")) {
     if (session?.kind !== "admin") {
       if (isApi(pathname)) return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
@@ -46,18 +47,9 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  if (pathname.startsWith("/checkout") || pathname.startsWith("/account") || pathname.startsWith("/orders")) {
-    if (session?.kind !== "customer") {
-      if (isApi(pathname)) return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
-      const url = new URL("/login", req.url);
-      url.searchParams.set("next", pathname);
-      return NextResponse.redirect(url);
-    }
-  }
-
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/checkout/:path*", "/account/:path*", "/orders/:path*"],
+  matcher: ["/admin/:path*"],
 };

@@ -6,12 +6,10 @@ import { useEffect, useMemo, useState } from "react";
 import { readCart, removeFromCart, setQty, type CartItem } from "@/lib/store/cart";
 
 export default function CartPage() {
-  // IMPORTANT: start empty so server+client match (prevents hydration error)
   const [items, setItems] = useState<CartItem[]>([]);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
 
-  // Load cart after mount + subscribe to changes
   useEffect(() => {
     const refresh = () => setItems(readCart());
     refresh();
@@ -46,11 +44,6 @@ export default function CartPage() {
           })),
         }),
       });
-
-      if (r.status === 401) {
-        window.location.href = "/login?next=/cart";
-        return;
-      }
 
       const j = await r.json().catch(() => ({}));
 

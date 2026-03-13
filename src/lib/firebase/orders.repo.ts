@@ -47,7 +47,8 @@ export type OrderDoc = {
     uploadedAtMs: number;
   };
   paymentApprovedAtMs?: number;
-uid?: string;
+
+  uid?: string;
   email?: string;
 
   status: OrderStatus;
@@ -63,6 +64,10 @@ uid?: string;
   trackingUrl?: string;
 
   confirmationEmailSentAtMs?: number;
+
+  // NEW: admin notification idempotency
+  adminNewOrderEmailSentAtMs?: number;
+
   shippingEmailLastSentAtMs?: number;
   reviewRequestEmailSentAtMs?: number;
 
@@ -134,6 +139,11 @@ export async function markOrderConfirmationEmailSent(sessionId: string) {
   await ref.update({ confirmationEmailSentAtMs: Date.now(), updatedAt: serverTimestamp() });
 }
 
+export async function markAdminNewOrderEmailSent(sessionId: string) {
+  const ref = db.collection(COL.orders).doc(sessionId);
+  await ref.update({ adminNewOrderEmailSentAtMs: Date.now(), updatedAt: serverTimestamp() });
+}
+
 export async function listOrdersForCustomer(input: { uid?: string; email?: string }, limit = 50): Promise<OrderWithId[]> {
   const email = (input.email || "").trim().toLowerCase();
   const uid = (input.uid || "").trim();
@@ -148,8 +158,6 @@ export async function listOrdersForCustomer(input: { uid?: string; email?: strin
     return [];
   }
 
-  // NOTE: This orderBy may require an index depending on your Firestore setup.
-  // If Firestore complains later, we can remove orderBy or add the index.
   q = q.orderBy("createdAtMs", "desc").limit(limit);
 
   const snap = await q.get();
@@ -161,11 +169,6 @@ export async function listAllOrdersAdmin(limit = 200): Promise<OrderWithId[]> {
   return snap.docs.map((d) => ({ id: d.id, ...(d.data() as OrderDoc) }));
 }
 
-/**
- * Buyer-check for reviews:
- * Returns true if the customer has ANY order containing this productId.
- * Uses a simple scan of recent orders (safe and reliable).
- */
 export async function customerHasPurchasedProduct(input: { uid?: string; email?: string }, productId: string) {
   const uid = (input.uid || "").trim();
   const email = (input.email || "").trim().toLowerCase();
@@ -178,7 +181,6 @@ export async function customerHasPurchasedProduct(input: { uid?: string; email?:
   else if (email) q = q.where("email", "==", email);
   else return false;
 
-  // Avoid orderBy to reduce index requirements for this check
   const snap = await q.limit(100).get();
   if (snap.empty) return false;
 
@@ -191,6 +193,7 @@ export async function customerHasPurchasedProduct(input: { uid?: string; email?:
 
   return false;
 }
+
 export async function createBankTransferOrder(input: {
   uid: string;
   email: string;

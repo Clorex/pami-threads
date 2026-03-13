@@ -1,40 +1,20 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 export default function AccountPage() {
-  const [email, setEmail] = useState<string>("");
-
-  useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((j) => setEmail(j?.session?.email || ""))
-      .catch(() => setEmail(""));
-  }, []);
-
-  async function signOut() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.href = "/";
-  }
-
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-2xl font-semibold text-pt-green">My account</h1>
-      <p className="mt-2 text-sm text-gray-600">{email ? `Signed in as ${email}` : ""}</p>
+    <div className="mx-auto max-w-2xl px-4 py-16 text-center">
+      <h1 className="text-3xl font-semibold text-pt-green">Accounts are not required</h1>
+      <p className="mt-3 text-sm text-gray-600">
+        We keep checkout simple—no customer accounts. Order updates are sent by email.
+      </p>
 
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-        <Link href="/orders" className="rounded-xl bg-pt-green hover:bg-pt-green-hover px-4 py-2 text-sm font-semibold text-white text-center">
-          View orders
+      <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        <Link href="/shop" className="rounded-xl bg-pt-green px-5 py-3 text-sm font-semibold text-white hover:bg-pt-green-hover">
+          Continue shopping
         </Link>
-
-        <button
-          type="button"
-          onClick={signOut}
-          className="rounded-xl border px-4 py-2 text-sm font-medium hover:bg-gray-50"
-        >
-          Sign out
-        </button>
+        <Link href="/faq" className="rounded-xl border px-5 py-3 text-sm font-semibold hover:bg-gray-50">
+          FAQ
+        </Link>
       </div>
     </div>
   );

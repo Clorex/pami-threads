@@ -5,12 +5,13 @@ import { stripe } from "@/lib/stripe/server";
 import {
   createOrUpdateOrderBySessionId,
   getOrderBySessionId,
+  markAdminNewOrderEmailSent,
   markOrderConfirmationEmailSent,
   type OrderItem,
   type ShippingAddress,
   type OrderDoc,
 } from "@/lib/firebase/orders.repo";
-import { sendOrderConfirmationEmail } from "@/lib/email/orders";
+import { sendAdminNewOrderEmail, sendOrderConfirmationEmail } from "@/lib/email/orders";
 
 export const runtime = "nodejs";
 
@@ -25,11 +26,13 @@ async function sessionToOrder(session: Stripe.Checkout.Session) {
   const currency = session.currency || "usd";
   const amountTotalCents = session.amount_total || 0;
 
+  // No customer accounts: uid is optional/undefined
   const uid = (session.metadata?.uid || "").trim() || undefined;
+
   const email =
     (session.customer_details?.email || session.metadata?.email || "").trim().toLowerCase() || undefined;
 
-    const sd = (session as any).shipping_details;
+  const sd = (session as any).shipping_details;
 
   const shipping: ShippingAddress | undefined = sd
     ? {
@@ -43,7 +46,8 @@ async function sessionToOrder(session: Stripe.Checkout.Session) {
         country: sd.address?.country || undefined,
       }
     : undefined;
-const lineItems = await stripe.checkout.sessions.listLineItems(sessionId, { limit: 100 });
+
+  const lineItems = await stripe.checkout.sessions.listLineItems(sessionId, { limit: 100 });
 
   const items: OrderItem[] = [];
   for (const li of lineItems.data) {
@@ -118,15 +122,22 @@ export async function POST(req: Request) {
       // Save order (idempotent)
       await createOrUpdateOrderBySessionId(sessionId, order);
 
-      // Send confirmation email only once
-      if (order.email) {
-        const existing = await getOrderBySessionId(sessionId);
-        const alreadySent = Boolean(existing?.confirmationEmailSentAtMs);
+      const existing = await getOrderBySessionId(sessionId);
 
+      // Customer confirmation email (optional)
+      if (order.email) {
+        const alreadySent = Boolean(existing?.confirmationEmailSentAtMs);
         if (!alreadySent) {
           await sendOrderConfirmationEmail(order.email, order as OrderDoc);
           await markOrderConfirmationEmailSent(sessionId);
         }
+      }
+
+      // Admin notification email (always)
+      const adminAlreadySent = Boolean(existing?.adminNewOrderEmailSentAtMs);
+      if (!adminAlreadySent) {
+        await sendAdminNewOrderEmail(order as OrderDoc);
+        await markAdminNewOrderEmailSent(sessionId);
       }
 
       return NextResponse.json({ ok: true });

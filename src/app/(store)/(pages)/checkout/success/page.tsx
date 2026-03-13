@@ -5,7 +5,7 @@ export default function CheckoutSuccessPage() {
     <div className="mx-auto max-w-2xl px-4 py-16 text-center">
       <h1 className="text-3xl font-semibold text-pt-green">Payment successful</h1>
       <p className="mt-3 text-sm text-gray-600">
-        Thank you for your order. YouÃ¢â‚¬â„¢ll receive an email confirmation shortly.
+        Thank you for your order. You’ll receive an email confirmation shortly.
       </p>
 
       <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
@@ -16,10 +16,10 @@ export default function CheckoutSuccessPage() {
           Continue shopping
         </Link>
         <Link
-          href="/account"
+          href="/gallery"
           className="rounded-xl border px-5 py-3 text-sm font-semibold hover:bg-gray-50"
         >
-          My account
+          View gallery
         </Link>
       </div>
     </div>

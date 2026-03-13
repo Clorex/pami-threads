@@ -1,8 +1,8 @@
 ﻿import { NextResponse } from "next/server";
-import { clearSessionCookie } from "@/lib/auth/cookie";
 
 export async function POST() {
-  const res = NextResponse.json({ ok: true });
-  clearSessionCookie(res);
-  return res;
+  return NextResponse.json(
+    { ok: false, message: "Customer sign-in is disabled. Checkout does not require an account." },
+    { status: 410 }
+  );
 }
