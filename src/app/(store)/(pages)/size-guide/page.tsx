@@ -57,10 +57,6 @@ export default function SizeGuidePage() {
               ))}
             </tbody>
           </table>
-
-          <p className="mt-4 text-xs text-gray-500">
-            This is a general guide. If you want exact sizing per product, we can add fit notes on each product page.
-          </p>
         </div>
       </div>
 
