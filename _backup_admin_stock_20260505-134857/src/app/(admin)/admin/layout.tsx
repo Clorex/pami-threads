@@ -13,7 +13,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link href="/admin/products" className="text-sm text-gray-700 hover:text-black">
               Products
             </Link>
-<Link href="/admin/products/stock">Stock</Link>
             <Link href="/admin/orders" className="text-sm text-gray-700 hover:text-black">
               Orders
             </Link>
@@ -37,4 +36,3 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     </div>
   );
 }
-

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -24,7 +24,7 @@ export default function AdminProductsPage() {
   /* Load all products from API */
   async function load() {
     setMsg("");
-    const r = await fetch("/admin/api/products", { method: "GET", cache: "no-store" });
+    const r = await fetch("/admin/api/products", { method: "GET" });
     const j = await r.json().catch(() => ({}));
     if (!r.ok || !j?.ok) {
       setMsg("Could not load products.");

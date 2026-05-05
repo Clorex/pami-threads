@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -6,14 +6,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <header className="border-b bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <Link href="/admin" className="font-semibold tracking-tight">
-            Pami Threads Admin
+            Pami Threads — Admin
           </Link>
 
           <div className="flex items-center gap-3">
             <Link href="/admin/products" className="text-sm text-gray-700 hover:text-black">
               Products
             </Link>
-<Link href="/admin/products/stock">Stock</Link>
             <Link href="/admin/orders" className="text-sm text-gray-700 hover:text-black">
               Orders
             </Link>
@@ -33,8 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-8"><div className="text-lg">{children}</div></main>
+      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
     </div>
   );
 }
-

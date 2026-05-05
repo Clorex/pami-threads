@@ -164,18 +164,6 @@ export function ProductForm({
           <input className={input} {...form.register("priceDollars")} placeholder="120" />
         </div>
 
-
-        <div>
-          <label className="text-lg font-semibold">Stock</label>
-          <input
-            type="number"
-            min={0}
-            className={input}
-            {...form.register(`variants.0.stock` as const, { valueAsNumber: true })}
-          />
-          <div className="mt-2 text-base text-gray-600">0 means sold out.</div>
-        </div>
-
         <label className="flex items-center gap-3 text-lg">
           <input type="checkbox" className="h-5 w-5" {...form.register("isActive")} />
           Active
