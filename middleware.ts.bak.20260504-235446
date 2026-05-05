@@ -1,0 +1,24 @@
+﻿import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  // Allow login page + login endpoint to work without an admin session
+  if (pathname === "/admin/login" || pathname.startsWith("/admin/api/login")) {
+    return NextResponse.next();
+  }
+
+  const session = await readSession(req);
+
+  if (pathname.startsWith("/admin")) {
+    if (session?.kind !== "admin") {
+      if (isApi(pathname)) {
+        return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
+  }
+
+  return NextResponse.next();
+}

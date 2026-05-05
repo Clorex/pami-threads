@@ -1,4 +1,5 @@
-﻿import { NextResponse, type NextRequest } from "next/server";
+﻿import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
 const SESSION_COOKIE = "pt_session";
@@ -34,16 +35,20 @@ function isApi(pathname: string) {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  if (pathname.startsWith("/admin/api/login")) return NextResponse.next();
+  // Prevent redirect loop: allow the login page and login endpoint through
+  if (pathname === "/admin/login" || pathname.startsWith("/admin/api/login")) {
+    return NextResponse.next();
+  }
 
   const session = await readSession(req);
 
-  // Admin protection only
+  // Protect admin routes
   if (pathname.startsWith("/admin")) {
     if (session?.kind !== "admin") {
-      if (isApi(pathname)) return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
-      const url = new URL("/admin/login", req.url);
-      return NextResponse.redirect(url);
+      if (isApi(pathname)) {
+        return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL("/admin/login", req.url));
     }
   }
 
